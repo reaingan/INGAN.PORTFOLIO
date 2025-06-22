@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Code Quiz</title>
+    <style>
+        :root {
+            --bg: #0a0a12;
+            --text: #e0e0e0;
+            --glow: #0ff;
+            --accent: #f0f;
+            --secondary: #33334d;
+            --highlight: rgba(0, 255, 255, 0.2);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            line-height: 1.6;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            border-bottom: 1px solid var(--secondary);
+        }
+
+        h1 {
+            color: var(--glow);
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            opacity: 0.8;
+        }
+
+        .game-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px;
+            border: 1px solid var(--secondary);
+            border-radius: 5px;
+            background-color: rgba(15, 15, 25, 0.7);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--glow), transparent);
+            animation: scanline 4s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { top: 0; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        .question {
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            color: var(--glow);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        .options {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .option {
+            padding: 15px;
+            background-color: rgba(30, 30, 50, 0.7);
+            border: 1px solid var(--secondary);
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, var(--highlight), transparent);
+            transition: all 0.5s;
+        }
+
+        .option:hover {
+            border-color: var(--glow);
+            box-shadow: 0 0 15px var(--highlight);
+        }
+
+        .option:hover::before {
+            left: 100%;
+        }
+
+        .option.correct {
+            background-color: rgba(0, 60, 0, 0.3);
+            border-color: #0f0 !important;
+            color: #0f0;
+        }
+
+        .option.incorrect {
+            background-color: rgba(60, 0, 0, 0.3);
+            border-color: #f00 !important;
+            color: #f00;
+        }
+
+        .feedback {
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 3px;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .feedback.correct {
+            display: block;
+            background-color: rgba(0, 60, 0, 0.3);
+            border-left: 3px solid #0f0;
+            color: #0f0;
+        }
+
+        .feedback.incorrect {
+            display: block;
+            background-color: rgba(60, 0, 0, 0.3);
+            border-left: 3px solid #f00;
+            color: #f00;
+        }
+
+        button {
+            display: block;
+            margin: 0 auto;
+            padding: 12px 30px;
+            background-color: transparent;
+            color: var(--glow);
+            border: 1px solid var(--glow);
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background-color: var(--highlight);
+            box-shadow: 0 0 15px var(--highlight);
+        }
+
+        .score-container {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 1.1rem;
+        }
+
+        .score {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .high-score {
+            color: var(--glow);
+            font-weight: bold;
+        }
+
+        .glow {
+            animation: glow 1.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 5px var(--text);
+            }
+            to {
+                text-shadow: 0 0 10px var(--glow), 0 0 20px var(--glow);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="glow">HACKIQ</h1>
+        <p class="subtitle">Your brain is the mainframe</p>
+    </div>
+
+    <div class="game-container">
+        <div class="question" id="question">Initializing quiz system...</div>
+        
+        <div class="options" id="options">
+            <!-- Options will be inserted here -->
+        </div>
+        
+        <div class="feedback" id="feedback"></div>
+        
+        <button id="next-btn" style="display: none;">CONTINUE >></button>
+        
+        <div class="score-container">
+            <span>SCORE: <span class="score" id="score">0</span></span> | 
+            <span>HIGH SCORE: <span class="high-score" id="high-score">0</span></span>
+        </div>
+    </div>
+
+    <script>
+        // Extensive question bank (can be expanded)
+        const questionBank = [
+            {
+                question: "What does the 'DOM' stand for in web development?",
+                options: [
+                    "Document Object Model",
+                    "Data Object Management",
+                    "Digital Output Module",
+                    "Display Orientation Matrix"
+                ],
+                answer: 0,
+                explanation: "DOM stands for Document Object Model, which represents the page so programs can change the document structure, style, and content."
+            },
+            {
+                question: "Which CSS property controls the space between elements?",
+                options: [
+                    "spacing",
+                    "margin",
+                    "padding",
+                    "gap"
+                ],
+                answer: 1,
+                explanation: "The margin property controls the space between elements, while padding controls space inside an element."
+            },
+            {
+                question: "What will 'console.log(3 + '3')' output in JavaScript?",
+                options: [
+                    "6",
+                    "33",
+                    "NaN",
+                    "TypeError"
+                ],
+                answer: 1,
+                explanation: "JavaScript performs type coercion. The number 3 is converted to a string, resulting in string concatenation: '33'."
+            },
+            {
+                question: "Which HTML5 element represents the header of a document or section?",
+                options: [
+                    "<head>",
+                    "<header>",
+                    "<heading>",
+                    "<hgroup>"
+                ],
+                answer: 1,
+                explanation: "The <header> element represents introductory content, typically a group of introductory or navigational aids."
+            },
+            {
+                question: "What is the purpose of the 'alt' attribute in an <img> tag?",
+                options: [
+                    "To provide alternative text for screen readers",
+                    "To specify image alignment",
+                    "To add a tooltip",
+                    "To link to a higher resolution version"
+                ],
+                answer: 0,
+                explanation: "The alt attribute provides alternative text for screen readers and when images can't be displayed."
+            },
+            {
+                question: "Which method converts a JavaScript object to a JSON string?",
+                options: [
+                    "JSON.parse()",
+                    "JSON.stringify()",
+                    "object.toJSON()",
+                    "JSON.encode()"
+                ],
+                answer: 1,
+                explanation: "JSON.stringify() converts a JavaScript object to a JSON string, while JSON.parse() does the opposite."
+            },
+            {
+                question: "What does CSS stand for?",
+                options: [
+                    "Computer Style Sheets",
+                    "Creative Style Sheets",
+                    "Cascading Style Sheets",
+                    "Colorful Style Sheets"
+                ],
+                answer: 2,
+                explanation: "CSS stands for Cascading Style Sheets, which is used to style HTML elements."
+            },
+            {
+                question: "Which of these is NOT a JavaScript framework?",
+                options: [
+                    "React",
+                    "Angular",
+                    "Vue",
+                    "Flask"
+                ],
+                answer: 3,
+                explanation: "Flask is a Python web framework, not a JavaScript framework."
+            },
+            {
+                question: "What will 'typeof null' return in JavaScript?",
+                options: [
+                    "null",
+                    "undefined",
+                    "object",
+                    "string"
+                ],
+                answer: 2,
+                explanation: "This is a well-known quirk in JavaScript - typeof null returns 'object'."
+            },
+            {
+                question: "Which HTML element is used for playing video files?",
+                options: [
+                    "<media>",
+                    "<video>",
+                    "<movie>",
+                    "<play>"
+                ],
+                answer: 1,
+                explanation: "The <video> element is used to embed video content in HTML5."
+            }
+            // Add more questions here as needed
+        ];
+
+        // Game state
+        let score = 0;
+        let highScore = localStorage.getItem('highScore') || 0;
+        let usedQuestionIndices = [];
+        let currentQuestion = null;
+
+        // DOM elements
+        const questionEl = document.getElementById('question');
+        const optionsEl = document.getElementById('options');
+        const feedbackEl = document.getElementById('feedback');
+        const nextBtn = document.getElementById('next-btn');
+        const scoreEl = document.getElementById('score');
+        const highScoreEl = document.getElementById('high-score');
+
+        // Initialize game
+        function init() {
+            highScoreEl.textContent = highScore;
+            loadRandomQuestion();
+            
+            nextBtn.addEventListener('click', () => {
+                loadRandomQuestion();
+                feedbackEl.style.display = 'none';
+                nextBtn.style.display = 'none';
+            });
+        }
+
+        // Get a random unused question
+        function loadRandomQuestion() {
+            // Reset used questions if we've shown them all
+            if (usedQuestionIndices.length === questionBank.length) {
+                usedQuestionIndices = [];
+            }
+            
+            // Find a random unused question
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * questionBank.length);
+            } while (usedQuestionIndices.includes(randomIndex));
+            
+            usedQuestionIndices.push(randomIndex);
+            currentQuestion = questionBank[randomIndex];
+            
+            // Display question
+            questionEl.textContent = currentQuestion.question;
+            
+            // Display options
+            optionsEl.innerHTML = '';
+            currentQuestion.options.forEach((option, index) => {
+                const optionEl = document.createElement('div');
+                optionEl.className = 'option';
+                optionEl.textContent = option;
+                optionEl.addEventListener('click', () => checkAnswer(index));
+                optionsEl.appendChild(optionEl);
+            });
+        }
+
+        // Check selected answer
+        function checkAnswer(selectedIndex) {
+            // Disable all options to prevent multiple clicks
+            const options = document.querySelectorAll('.option');
+            options.forEach(opt => opt.style.pointerEvents = 'none');
+            
+            // Highlight correct and incorrect answers
+            options.forEach((opt, index) => {
+                if (index === currentQuestion.answer) {
+                    opt.classList.add('correct');
+                } else if (index === selectedIndex && index !== currentQuestion.answer) {
+                    opt.classList.add('incorrect');
+                }
+            });
+            
+            // Check if answer was correct
+            if (selectedIndex === currentQuestion.answer) {
+                score++;
+                scoreEl.textContent = score;
+                
+                // Update high score if needed
+                if (score > highScore) {
+                    highScore = score;
+                    highScoreEl.textContent = highScore;
+                    localStorage.setItem('highScore', highScore);
+                }
+                
+                feedbackEl.textContent = `CORRECT! ${currentQuestion.explanation}`;
+                feedbackEl.className = 'feedback correct';
+            } else {
+                feedbackEl.textContent = `INCORRECT! ${currentQuestion.explanation}`;
+                feedbackEl.className = 'feedback incorrect';
+                
+                // Reset score on wrong answer
+                score = 0;
+                scoreEl.textContent = score;
+            }
+            
+            feedbackEl.style.display = 'block';
+            nextBtn.style.display = 'block';
+        }
+
+        // Start the game
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Apple-Style Calculator</title>
+  <style>
+    body {
+      background: linear-gradient(to bottom right, #dbeafe, #fef9c3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: 'Helvetica Neue', sans-serif;
+    }
+
+    .calculator {
+      background: #1c1c1e;
+      border-radius: 30px;
+      padding: 20px;
+      width: 320px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
+    .display {
+      color: white;
+      font-size: 48px;
+      text-align: right;
+      padding: 10px 20px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+      background: #2c2c2e;
+      height: 60px;
+      overflow: hidden;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+    }
+
+    button {
+      height: 60px;
+      border: none;
+      border-radius: 50%;
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    .btn-number {
+      background-color: #505050;
+      color: white;
+    }
+
+    .btn-operator {
+      background-color: #ff9500;
+      color: white;
+    }
+
+    .btn-function {
+      background-color: #a5a5a5;
+      color: black;
+    }
+
+    .btn-zero {
+      grid-column: span 2;
+      border-radius: 30px;
+      text-align: left;
+      padding-left: 25px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="calculator">
+  <div id="display" class="display">0</div>
+  <div class="buttons">
+    <button class="btn-function" onclick="clearDisplay()">AC</button>
+    <button class="btn-function" onclick="toggleSign()">±</button>
+    <button class="btn-function" onclick="append('%')">%</button>
+    <button class="btn-operator" onclick="append('/')">÷</button>
+
+    <button class="btn-number" onclick="append('7')">7</button>
+    <button class="btn-number" onclick="append('8')">8</button>
+    <button class="btn-number" onclick="append('9')">9</button>
+    <button class="btn-operator" onclick="append('*')">×</button>
+
+    <button class="btn-number" onclick="append('4')">4</button>
+    <button class="btn-number" onclick="append('5')">5</button>
+    <button class="btn-number" onclick="append('6')">6</button>
+    <button class="btn-operator" onclick="append('-')">−</button>
+
+    <button class="btn-number" onclick="append('1')">1</button>
+    <button class="btn-number" onclick="append('2')">2</button>
+    <button class="btn-number" onclick="append('3')">3</button>
+    <button class="btn-operator" onclick="append('+')">+</button>
+
+    <button class="btn-number btn-zero" onclick="append('0')">0</button>
+    <button class="btn-number" onclick="append('.')">.</button>
+    <button class="btn-operator" onclick="calculate()">=</button>
+  </div>
+</div>
+
+<script>
+  const display = document.getElementById('display');
+
+  function append(value) {
+    if (display.innerText === "0" || display.innerText === "Error") {
+      display.innerText = value;
+    } else {
+      display.innerText += value;
+    }
+  }
+
+  function clearDisplay() {
+    display.innerText = "0";
+  }
+
+  function toggleSign() {
+    let value = display.innerText;
+    if (value === "0" || value === "Error") return;
+    if (value.charAt(0) === "-") {
+      display.innerText = value.substring(1);
+    } else {
+      display.innerText = "-" + value;
+    }
+  }
+
+  function calculate() {
+    try {
+      const sanitized = display.innerText.replace(/×/g, '*').replace(/÷/g, '/');
+      const result = eval(sanitized);
+      display.innerText = result;
+    } catch {
+      display.innerText = "Error";
+    }
+  }
+
+  // Keyboard support
+  document.addEventListener('keydown', (event) => {
+    const key = event.key;
+    if (!isNaN(key)) append(key); // numbers
+    else if (["+", "-", "*", "/", "%", "."].includes(key)) append(key);
+    else if (key === "Enter" || key === "=") {
+      event.preventDefault();
+      calculate();
+    }
+    else if (key === "Backspace") {
+      event.preventDefault();
+      let current = display.innerText;
+      display.innerText = current.length > 1 ? current.slice(0, -1) : "0";
+    }
+    else if (key === "Escape") {
+      clearDisplay();
+    }
+  });
+</script>
+
+</body>
+</html>
